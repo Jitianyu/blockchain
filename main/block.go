@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"time"
+	"encoding/gob"
 )
 
 type Block struct {
@@ -22,6 +23,20 @@ func (b *Block) SetHash() {
 	b.Hash = hash[:]
 }
 
+func (b *Block) Serialize() []byte {
+	var result bytes.Buffer
+	encoder := gob.NewEncoder(&result)
+	encoder.Encode(b)
+	return result.Bytes()
+}
+
+func DeSerializeBlock(d []byte) *Block {
+	var block Block
+	decoder := gob.NewDecoder(bytes.NewReader(d))
+	decoder.Decode(block)
+	return &block
+}
+
 func NewBlock(data string, preBlockHash []byte) *Block {
 	block := &Block{time.Now().Unix(), []byte(data), preBlockHash, []byte{}, 0}
 	pow := NewProofOfWork(block)
@@ -30,3 +45,5 @@ func NewBlock(data string, preBlockHash []byte) *Block {
 	block.Hash = hash
 	return block
 }
+
+
